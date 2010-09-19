@@ -18,7 +18,6 @@
 		CA4C36C51224C1EF00E11982 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA4C36C41224C1EF00E11982 /* CoreLocation.framework */; };
 		CA4C36C71224C1EF00E11982 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA4C36C61224C1EF00E11982 /* MapKit.framework */; };
 		CA7597021239970F000F754B /* SFCentroidAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = CA7597011239970F000F754B /* SFCentroidAnnotation.m */; };
-		CAF6B5501228AB080006B798 /* SFTouchView.m in Sources */ = {isa = PBXBuildFile; fileRef = CAF6B54F1228AB080006B798 /* SFTouchView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,8 +38,6 @@
 		CA4C36C61224C1EF00E11982 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		CA7597001239970F000F754B /* SFCentroidAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SFCentroidAnnotation.h; sourceTree = "<group>"; };
 		CA7597011239970F000F754B /* SFCentroidAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SFCentroidAnnotation.m; sourceTree = "<group>"; };
-		CAF6B54E1228AB080006B798 /* SFTouchView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SFTouchView.h; sourceTree = "<group>"; };
-		CAF6B54F1228AB080006B798 /* SFTouchView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SFTouchView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,14 +59,12 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				CAF6B54C1228AAD40006B798 /* Views */,
 				1D3623240D0F684500981E51 /* MapKitFunAppDelegate.h */,
 				1D3623250D0F684500981E51 /* MapKitFunAppDelegate.m */,
+				CA930D971246A333004FF316 /* Annotations */,
 				CA4C36B01224C12300E11982 /* MapViewController.h */,
 				CA4C36B11224C12300E11982 /* MapViewController.m */,
 				CA4C36B21224C12300E11982 /* MapViewController.xib */,
-				CA7597001239970F000F754B /* SFCentroidAnnotation.h */,
-				CA7597011239970F000F754B /* SFCentroidAnnotation.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -124,13 +119,13 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		CAF6B54C1228AAD40006B798 /* Views */ = {
+		CA930D971246A333004FF316 /* Annotations */ = {
 			isa = PBXGroup;
 			children = (
-				CAF6B54E1228AB080006B798 /* SFTouchView.h */,
-				CAF6B54F1228AB080006B798 /* SFTouchView.m */,
+				CA7597001239970F000F754B /* SFCentroidAnnotation.h */,
+				CA7597011239970F000F754B /* SFCentroidAnnotation.m */,
 			);
-			name = Views;
+			name = Annotations;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -197,7 +192,6 @@
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* MapKitFunAppDelegate.m in Sources */,
 				CA4C36B31224C12300E11982 /* MapViewController.m in Sources */,
-				CAF6B5501228AB080006B798 /* SFTouchView.m in Sources */,
 				CA7597021239970F000F754B /* SFCentroidAnnotation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -238,8 +232,10 @@
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Brandon Alexander (4R4Y6B4GV6)";
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PREBINDING = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "C0294422-ADB5-42D0-A13D-9E0DE3C7658C";
 				SDKROOT = iphoneos4.1;

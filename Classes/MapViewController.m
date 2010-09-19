@@ -10,8 +10,41 @@
 #import <MapKit/MKPolygonView.h>
 #import <MapKit/MKPolygon.h>
 #import "MapViewController.h"
-#import "SFTouchView.h"
 #import "SFCentroidAnnotation.h"
+
+NSInteger AnnotationSortFunction(id annotation1, id annotation2, void *context) {
+	SFCentroidAnnotation *referencePoint = (SFCentroidAnnotation *)context;
+	
+	double x1 = ([annotation1 coordinate].longitude - [referencePoint coordinate].longitude);
+	double x2 = ([annotation2 coordinate].longitude - [referencePoint coordinate].longitude);
+	
+	double y1 = ([annotation1 coordinate].latitude - [referencePoint coordinate].latitude);
+	double y2 = ([annotation2 coordinate].latitude - [referencePoint coordinate].latitude);
+	
+	double angle1 = atan2(y1, x1) * 180 / M_PI;
+	double angle2 = atan2(y2, x2) * 180 / M_PI;
+
+	if(angle1 < -90) {
+		angle1 = fabs(angle1) + 90;
+	} else if (angle1 < 0) {
+		angle1 += 360;
+	}
+	
+	if(angle2 < -90) {
+		angle2 = fabs(angle2) + 90;
+	} else if (angle2 < 0) {
+		angle2 += 360;
+	}
+	
+	if (angle1 < angle2) {
+		return NSOrderedAscending;
+	} else {
+		return NSOrderedDescending;
+	}
+
+	
+	return NSOrderedSame;
+}
 
 @interface MapViewController(PrivateMethods)
 -(void) addRegion;
@@ -35,23 +68,22 @@
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];
-
+	
+	//Using the location manager to get around the quirk in the simulator
 	locationManager = [[CLLocationManager alloc] init];
 	locationManager.delegate = self;
 	
 	[locationManager startUpdatingLocation];
 	
-	CGRect viewRect = [self.mapView frame];
-	overlay = [[SFTouchView alloc] initWithFrame:viewRect];
-	overlay.delegate = self;
-	overlay.multipleTouchEnabled = NO;
-	overlay.userInteractionEnabled = YES;
-	
 	UILongPressGestureRecognizer *gestureRecognizer = 
 	[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+	[gestureRecognizer setMinimumPressDuration:0.25];
 	
+	//MKMapView is configured in the nib
 	[mapView addGestureRecognizer:gestureRecognizer];
 	[gestureRecognizer release];
+	
+	sortedAnnotations = [[NSMutableArray alloc] init];
 }
 
 
@@ -75,6 +107,7 @@
 	userLocation.coordinate = newLocation.coordinate;
 	
 	[mapView addAnnotation:userLocation];
+	[sortedAnnotations addObject:userLocation];
 	[userLocation release];
 }
 
@@ -98,27 +131,21 @@
 - (MKOverlayView *)mapView:(MKMapView *)mapView viewForOverlay:(id <MKOverlay>)mapOverlay {
 	MKPolygonView *polygonView = [[[MKPolygonView alloc] initWithPolygon:(MKPolygon *)mapOverlay] autorelease];
 	
-	polygonView.fillColor = [[UIColor cyanColor] colorWithAlphaComponent:0.2];
+	polygonView.fillColor = [[UIColor blueColor] colorWithAlphaComponent:0.2];
 	polygonView.strokeColor = [[UIColor blueColor] colorWithAlphaComponent:0.7];
 	polygonView.lineWidth = 3;
 	
 	return polygonView;
 }
 
-#pragma mark -
-#pragma mark SFTouchViewDelegate Methods
--(void)view:(SFTouchView *)view touchDidEnd:(UITouch *)touch {
-	NSLog(@"Touch: %@", [touch description]);
-	CGPoint touchLocation = [touch locationInView:mapView];
-	CLLocationCoordinate2D coordinate = [mapView convertPoint:touchLocation toCoordinateFromView:mapView];
-	
-	MKPointAnnotation *newAnnotation = [[MKPointAnnotation alloc] init];
-	newAnnotation.coordinate = coordinate;
-	
-	[mapView addAnnotation:newAnnotation];
-	[newAnnotation release];
+- (void)mapView:(MKMapView *)mapView annotationView:(MKAnnotationView *)view didChangeDragState:(MKAnnotationViewDragState)newState fromOldState:(MKAnnotationViewDragState)oldState {
+	if(newState == MKAnnotationViewDragStateEnding) {
+		[self findCentroid:nil];
+	}
 }
 
+#pragma mark -
+#pragma mark UIGestureRecognizer Handlers
 -(void)handleLongPress:(UILongPressGestureRecognizer *)gestureRecognizer {
 	if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
 		CGPoint touchLocation = [gestureRecognizer locationInView:mapView];
@@ -128,7 +155,12 @@
 		newAnnotation.coordinate = coordinate;
 		
 		[mapView addAnnotation:newAnnotation];
+		[sortedAnnotations addObject:newAnnotation];
 		[newAnnotation release];
+		
+		if(centroidAnnotation != nil) {
+			[self findCentroid:nil];
+		}
 	}
 }
 
@@ -152,19 +184,26 @@
 		[centroidAnnotation release];
 		centroidAnnotation = nil;
 	}
-	[self addRegion];
-	
 	centroidAnnotation = [[SFCentroidAnnotation alloc] init];
 	centroidAnnotation.coordinate = CLLocationCoordinate2DMake(latAverage, longAverage);
 	
 	[mapView addAnnotation:centroidAnnotation];
+
+	[self addRegion];
 }
 
 -(void) addRegion {
-	CLLocationCoordinate2D points[[mapView.annotations count]];
+	if(centroidAnnotation == nil) {
+		return;
+	}
 	
-	for(int i = 0; i < [mapView.annotations count]; i++) {
-		points[i] = [[mapView.annotations objectAtIndex:i] coordinate];
+	CLLocationCoordinate2D points[[sortedAnnotations count]];
+	
+	//Sort the non-centroid annotations
+	[sortedAnnotations sortUsingFunction:AnnotationSortFunction context:centroidAnnotation];
+	
+	for(int i = 0; i < [sortedAnnotations count]; i++) {
+		points[i] = [[sortedAnnotations objectAtIndex:i] coordinate];
 	}
 	
 	if(overlayPolygon) {
@@ -173,27 +212,9 @@
 		overlayPolygon = nil;
 	}
 	
-	overlayPolygon = [[MKPolygon polygonWithCoordinates:points count:[mapView.annotations count]] retain];
+	overlayPolygon = [[MKPolygon polygonWithCoordinates:points count:[sortedAnnotations count]] retain];
 	
 	[mapView addOverlay:overlayPolygon];
-}
-
--(IBAction)startEdit:(id)sender {
-	UIBarButtonItem *button = (UIBarButtonItem *)sender;
-	if ([[button title] isEqualToString:@"Done"]) {
-		[button setStyle:UIBarButtonItemStyleBordered];
-		[button setTitle:@"Edit"];
-		
-		[centroidButton setEnabled:YES];
-		[overlay removeFromSuperview];
-	} else {
-		[button setStyle:UIBarButtonItemStyleDone];
-		[button setTitle:@"Done"];
-		
-		[centroidButton setEnabled:NO];
-		[self.view addSubview:overlay];
-	}
-	
 }
 
 #pragma mark -

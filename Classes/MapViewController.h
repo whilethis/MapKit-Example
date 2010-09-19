@@ -8,14 +8,13 @@
 
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
-#import "SFTouchView.h"
 
-@interface MapViewController : UIViewController<MKMapViewDelegate, CLLocationManagerDelegate, SFTouchViewDelegate> {
+@interface MapViewController : UIViewController<MKMapViewDelegate, CLLocationManagerDelegate> {
 	MKMapView *mapView;
 	CLLocationManager *locationManager;
 	UIBarButtonItem *centroidButton;
+	NSMutableArray *sortedAnnotations;
 	
-	SFTouchView *overlay;
 	MKPointAnnotation *centroidAnnotation;
 	MKPolygon *overlayPolygon;
 }
@@ -24,6 +23,5 @@
 @property (retain, nonatomic) IBOutlet UIBarButtonItem *centroidButton;
 
 -(IBAction)findCentroid:(id)sender;
--(IBAction)startEdit:(id)sender;
 
 @end
