@@ -12,6 +12,13 @@
 #import "MapViewController.h"
 #import "SFCentroidAnnotation.h"
 
+/* monotonic version of the atan2 function; returns angle in radians on [0, 2*PI) */
+double atan2m(double y, double x)
+{
+	double at2 = atan2(y, x);
+	return (at2 < 0.0) ? (at2 + 2*M_PI) : at2;
+}
+
 NSInteger AnnotationSortFunction(id annotation1, id annotation2, void *context) {
 	SFCentroidAnnotation *referencePoint = (SFCentroidAnnotation *)context;
 	
@@ -21,27 +28,15 @@ NSInteger AnnotationSortFunction(id annotation1, id annotation2, void *context) 
 	double y1 = ([annotation1 coordinate].latitude - [referencePoint coordinate].latitude);
 	double y2 = ([annotation2 coordinate].latitude - [referencePoint coordinate].latitude);
 	
-	double angle1 = atan2(y1, x1) * 180 / M_PI;
-	double angle2 = atan2(y2, x2) * 180 / M_PI;
-
-	if(angle1 < -90) {
-		angle1 = fabs(angle1) + 90;
-	} else if (angle1 < 0) {
-		angle1 += 360;
-	}
-	
-	if(angle2 < -90) {
-		angle2 = fabs(angle2) + 90;
-	} else if (angle2 < 0) {
-		angle2 += 360;
-	}
+	double angle1 = atan2m(y1, x1);
+	double angle2 = atan2m(y2, x2);
 	
 	if (angle1 < angle2) {
 		return NSOrderedAscending;
 	} else {
 		return NSOrderedDescending;
 	}
-
+	
 	
 	return NSOrderedSame;
 }
