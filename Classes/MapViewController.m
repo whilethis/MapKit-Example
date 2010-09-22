@@ -77,7 +77,7 @@ NSInteger AnnotationSortFunction(id annotation1, id annotation2, void *context) 
 	
 	UILongPressGestureRecognizer *gestureRecognizer = 
 	[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-	[gestureRecognizer setMinimumPressDuration:0.25];
+	[gestureRecognizer setMinimumPressDuration:0.4];
 	
 	//MKMapView is configured in the nib
 	[mapView addGestureRecognizer:gestureRecognizer];
@@ -115,7 +115,7 @@ NSInteger AnnotationSortFunction(id annotation1, id annotation2, void *context) 
 #pragma mark MKMapViewDelegate Methods
 - (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id <MKAnnotation>)annotation {
 	MKPinAnnotationView *annotationView = [[[MKPinAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:@""] autorelease];
-	
+
 	annotationView.animatesDrop = YES;
 	annotationView.canShowCallout = NO;
 	annotationView.draggable = YES;
@@ -130,7 +130,7 @@ NSInteger AnnotationSortFunction(id annotation1, id annotation2, void *context) 
 
 - (MKOverlayView *)mapView:(MKMapView *)mapView viewForOverlay:(id <MKOverlay>)mapOverlay {
 	MKPolygonView *polygonView = [[[MKPolygonView alloc] initWithPolygon:(MKPolygon *)mapOverlay] autorelease];
-	
+
 	polygonView.fillColor = [[UIColor blueColor] colorWithAlphaComponent:0.2];
 	polygonView.strokeColor = [[UIColor blueColor] colorWithAlphaComponent:0.7];
 	polygonView.lineWidth = 3;
@@ -235,6 +235,13 @@ NSInteger AnnotationSortFunction(id annotation1, id annotation2, void *context) 
 
 
 - (void)dealloc {
+	[mapView release], mapView = nil;
+	[locationManager release], locationManager = nil;
+	[sortedAnnotations release], sortedAnnotations = nil;
+	[centroidButton release], centroidButton = nil;
+	[centroidAnnotation release], centroidAnnotation = nil;
+	[overlayPolygon release], overlayPolygon = nil;
+	
     [super dealloc];
 }
 
